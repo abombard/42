@@ -8,8 +8,8 @@ bool	internal_context__initialize(t_internal_context *context)
 
 	page_size = getpagesize();
 	ASSERT(page_size > 0);
-	tiny_map_size = (size_t)page_size;
-	small_map_size = (size_t)(page_size * 5);
+	tiny_map_size = (size_t)page_size * 5;
+	small_map_size = (size_t)(page_size * 10);
 	ASSERT(mem_handle__initialize(&context->tiny, tiny_map_size));
 	ASSERT(mem_handle__initialize(&context->small, small_map_size));
 	ASSERT(mem_handle__initialize(&context->large, 0));
