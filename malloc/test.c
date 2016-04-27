@@ -52,15 +52,16 @@ int main(int argc, char **argv)
 		size_t	size;
 		char	*str;
 
-		size = STR_SIZE;
-		str = ft_malloc(size + 1);
+		str = ft_malloc(STR_SIZE + 1);
 		if (!str)
 		{
 			fprintf(stderr, "ft_malloc() failed size %zu\n", size);
 			return (1);
 		}
 		memcpy(str, STR, STR_SIZE);
-		str[size] = 0;
+		str[STR_SIZE] = 0;
+
+		size = STR_SIZE;
 
 		while (size < size_max)
 		{
@@ -71,14 +72,11 @@ int main(int argc, char **argv)
 				return (1);
 			}
 			memcpy(str + size, STR, STR_SIZE);
-
-			fprintf(stderr, "str %p %s\n", (void *)str, str);
-
 			size += STR_SIZE;
 			str[size] = 0;
-		}
 
-		fprintf(stderr, "str %p %s\n", (void *)str, str);
+			fprintf(stderr, "str %p %s\n", (void *)str, str);
+		}
 
 		ft_free(str);
 

@@ -37,10 +37,10 @@ typedef enum	e_mem_type
 */
 typedef struct	s_block
 {
-	t_mem_type			mem_type;
-	t_fifo_type			fifo_type;
-	t_list				fifo_list;
-	size_t				size;
+	t_mem_type		mem_type;
+	t_fifo_type		fifo_type;
+	t_list			fifo_list;
+	size_t			size;
 }				t_block;
 
 # define AREA_TO_BLOCK_OFFSET(area, block)	{block = area - sizeof(t_block);}

@@ -48,7 +48,7 @@ bool	mem_handle__block_alloc_large(t_mem_handle *mem_handle,
 	t_block	*block;
 	size_t	block_size;
 
-	block_size = (size / getpagesize() + 1) * getpagesize();
+	block_size = size;
 
 	*out_block = NULL;
 	block = mmap(0,
