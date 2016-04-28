@@ -34,8 +34,8 @@ typedef struct	s_block
 {
 	t_list			list;
 
-	t_block_type    type;
-	size_t		    size;
+	t_block_type	type;
+	size_t			size;
 	t_block_state	state;
 
 	struct s_map	*map_addr;
@@ -46,9 +46,9 @@ typedef struct	s_block
 */
 typedef struct	s_map
 {
-	size_t		    size;
+	size_t			size;
 
-    t_block_type	block_type;
+	t_block_type	block_type;
 
 	size_t			block_count_max;
 	size_t			block_count;
@@ -63,12 +63,12 @@ typedef struct	s_map
 /*
 ** context
 */
-typedef struct  s_context
+typedef struct	s_context
 {
 	bool	is_initialized;
 
 	size_t	tiny_block_size;
-    t_list	tiny;
+	t_list	tiny;
 
 	size_t	small_block_size;
 	t_list	small;

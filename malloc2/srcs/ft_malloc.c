@@ -1,53 +1,91 @@
 #include "internal_malloc.h"
 #include <sys/mman.h>
 
-t_block    *block__retrieve(t_list *map_list_head)
+bool		block__get_next_block_free(t_block *old_first_block_free, t_block **out_block)
 {
-	t_block	*block_ret;
+	t_list	*start;
+	t_list	*pos;
 	t_block	*block;
+
+	*out_block = NULL;
+	start = &old_first_block_free->list;
+	LIST_FOREACH(start, pos)
+	{
+		block = CONTAINER_OF(pos, t_block, list);
+		if (block->state == BLOCK_STATE__FREE)
+		{
+			*out_block = block;
+			return (TRUE);
+		}
+	}
+	LOG_ERROR("Found no free block %s", "");
+	return (FALSE);
+}
+
+bool		map__get_next_block_free(t_map *map, t_block **out_block)
+{
+	t_block	*block_free;
+
+	*out_block = NULL;
+	if (map->block_count < map->block_count_max)
+	{
+		if (map->first_block_free == NULL)
+			FATAL("map->first_block_free %p", (void *)map->first_block_free);
+		if (!block__get_next_block_free(map->first_block_free, &block_free))
+			FATAL("block__get_next_block_free() failed %s", "");
+		if (block_free == NULL)
+			FATAL("No block free block_count %zu max %zu", map->block_count, map->block_count_max);
+		*out_block = block_free;
+	}
+	return (TRUE);
+}
+
+bool		set_next_block_free(t_list *map_list)
+{
+	t_map	*map;
+	t_block	*block_free;
+	t_list	*pos;
+
+	LIST_FOREACH(map_list, pos)
+	{
+		map = CONTAINER_OF(pos, t_map, list);
+		if (!map__get_next_block_free(map, &block_free))
+			FATAL("map__get_next_block_free() failed on map %p", map);
+		map->first_block_free = block_free;
+		if (map->first_block_free)
+			return (TRUE);
+	}
+	LOG_ERROR("No free map found %s", "");
+	return (FALSE);
+}
+
+bool		block_retrieve(t_list *map_list_head, t_block **out_block)
+{
 	t_list	*pos;
 	t_map	*map;
 
+	*out_block = NULL;
 	LIST_FOREACH(map_list_head, pos)
 	{
 		map = CONTAINER_OF(pos, t_map, list);
-		if (map->block_count == map->block_count_max)
-			continue ;
-
-		if (!map->first_block_free)
-		{
-			LOG_ERROR("First block free unavailable %s", "");
-			return (NULL);
-		}
-
-		/* Get first block free */
-		block_ret = map->first_block_free;
-		map->block_count++;
-
-		/* //TEMP make a function. Find next block free */
 		if (map->block_count < map->block_count_max)
 		{
-			LIST_FOREACH(&block_ret->list, pos)
-			{
-				block = CONTAINER_OF(pos, t_block, list);
-				if (block->state == BLOCK_STATE__FREE)
-				{
-					map->first_block_free = block;
-					break ;
-				}
-			}
-			if (pos == &block_ret->list)
-				FATAL("Could not find a free slot %s", "");
-			break ;
+			if (map->first_block_free == NULL)
+				FATAL("First block free is NULL block_count %zu max %zu", map->block_count, map->block_count_max);
+
+			/* Get first block free */
+			*out_block = map->first_block_free;
+			map->block_count++;
+
+			if (!set_next_block_free(map_list_head))
+				FATAL("set_next_block_free() failed %s", "");
+
+			return (TRUE);
 		}
 	}
 
-	if (map_list_head == pos)
-	{
-		LOG_ERROR("All maps are full %s", "");
-		return (NULL);
-	}
-	return (block);
+	LOG_ERROR("All Map are full %s", "");
+	return (FALSE);
 }
 
 /*
@@ -58,8 +96,6 @@ void	internal_map__init(t_map *map, const size_t block_size)
 	t_block	*block;
 	void	*addr;
 	size_t	block_offset;
-
-	fprintf(stderr, "mat__init()\n");
 
 	INIT_LIST_HEAD(&map->block_list);
 	block_offset = sizeof(t_map);
@@ -86,8 +122,6 @@ t_map	*map__create(const size_t map_size,
 {
 	t_map	*map;
 
-	fprintf(stderr, "map__create()\n");
-
 	map = mmap(0,
 			   map_size,
 			   PROT_READ | PROT_WRITE,
@@ -110,7 +144,7 @@ t_map	*map__create(const size_t map_size,
 bool	map__destroy(t_map *map)
 {
 	list_del(&map->list);
-    if (munmap(map, map->size) != 0)
+	if (munmap(map, map->size) != 0)
 	{
 		LOG_ERROR("munmap() failed addr %p", (void *)map);
 		return (FALSE);
@@ -126,11 +160,11 @@ bool	context__init(t_context *context)
 {
 	int		pagesize;
 	size_t	map_size;
-    t_map	*tiny;
-    t_map	*small;
+	t_map	*tiny;
+	t_map	*small;
 
 	pagesize = getpagesize();
-    if (pagesize <= 0)
+	if (pagesize <= 0)
 		FATAL("getpagesize() returned %d", pagesize);
 
 	map_size = (pagesize * 5);
@@ -160,27 +194,25 @@ void	*ft_malloc(size_t size)
 	static t_context	context = {
 		.is_initialized = FALSE
 	};
-	t_block				*block;
+	void				*block;
 	void				*area;
 
 	if (!size)
 		return (NULL);
-	fprintf(stderr, "ft_malloc()\n");
 	if (context.is_initialized == FALSE)
 	{
 		if (context__init(&context))
 			context.is_initialized = TRUE;
+		fprintf(stderr, "context initialized\n");
 	}
-
-	fprintf(stderr, "context initialized\n");
 
 	if (size <= context.tiny_block_size)
 	{
-		block = block__retrieve(&context.tiny);
+		ASSERT(block_retrieve(&context.tiny, (t_block **)&block));
 	}
 	else if (size <= context.small_block_size)
 	{
-		block = block__retrieve(&context.small);
+		ASSERT(block_retrieve(&context.small, (t_block **)&block));
 	}
 	else
 	{
@@ -188,7 +220,8 @@ void	*ft_malloc(size_t size)
 		return (NULL);
 	}
 
-	area = block;
-	area += sizeof(t_block);
+	area = block + sizeof(t_block);
+
+	LOG_DEBUG("out_area %p", (void *)area);
 	return (area);
 }
