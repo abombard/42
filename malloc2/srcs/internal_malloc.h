@@ -32,7 +32,7 @@ typedef enum	e_block_type
 */
 typedef struct	s_block
 {
-	t_list			list;
+    t_list			list;
 
 	t_block_type	type;
 	size_t			size;
@@ -40,6 +40,9 @@ typedef struct	s_block
 
 	struct s_map	*map_addr;
 }				t_block;
+
+# define BLOCK_TO_AREA_OFFSET(block)	((void *)block + sizeof(t_block))
+# define AREA_TO_BLOCK_OFFSET(area)		((void *)area - sizeof(t_block))
 
 /*
 ** map
@@ -60,20 +63,31 @@ typedef struct	s_map
 	t_list			list;
 }				t_map;
 
+typedef struct	s_map_handle
+{
+	size_t	block_type;
+	size_t	map_size;
+	size_t	block_size;
+	t_list	list_head;
+}				t_map_handle;
+
+t_map	*map__create(const size_t map_size,
+					 const t_block_type block_type,
+					 const size_t block_size);
+bool	map__destroy(t_map *map);
+
 /*
 ** context
 */
 typedef struct	s_context
 {
-	bool	is_initialized;
+	bool			is_initialized;
 
-	size_t	tiny_block_size;
-	t_list	tiny;
+	t_map_handle	tiny;
 
-	size_t	small_block_size;
-	t_list	small;
+	t_map_handle	small;
 
-	t_list	large;
+	t_list		large;
 }				t_context;
 
 #endif

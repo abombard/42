@@ -16,8 +16,10 @@
 # include <stdio.h>
 # include "types.h"
 
-# define LF ":%s:%s():%d#"
-# define LA __FILE__, __func__, __LINE__
+//# define LF ":%s:%s():%d#"
+//# define LA __FILE__, __func__, __LINE__
+# define LF ":%s() "
+# define LA __func__
 
 # define LOG_ERROR(FMT,...) fprintf(stderr,"FATAL"LF FMT"\n",LA,__VA_ARGS__)
 # define LOG_WARNING(FMT,...) fprintf(stderr,"WARNING"LF FMT"\n",LA,__VA_ARGS__)
