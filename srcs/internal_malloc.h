@@ -32,7 +32,7 @@ typedef enum	e_block_type
 */
 typedef struct	s_block
 {
-    t_list			list;
+	t_list			list;
 
 	t_block_type	type;
 	size_t			size;
@@ -47,33 +47,28 @@ typedef struct	s_block
 /*
 ** map
 */
-typedef struct	s_map
+typedef struct	s_map_info
 {
 	size_t			size;
 
 	t_block_type	block_type;
-
 	size_t			block_count_max;
-	size_t			block_count;
 	size_t			block_size;
-	t_list			block_list;
+}				t_map_info;
 
-	t_block			*first_block_free;
+typedef struct	s_map
+{
+	const t_map_info	*info;
 
-	t_list			list;
+	size_t				block_count;
+	t_list				block_list;
+
+	t_block				*first_block_free;
+
+	t_list				list;
 }				t_map;
 
-typedef struct	s_map_handle
-{
-	size_t	block_type;
-	size_t	map_size;
-	size_t	block_size;
-	t_list	list_head;
-}				t_map_handle;
-
-t_map	*map__create(const size_t map_size,
-					 const t_block_type block_type,
-					 const size_t block_size);
+t_map	*map__create(const t_map_info *map_info);
 bool	map__destroy(t_map *map);
 
 /*
@@ -81,13 +76,17 @@ bool	map__destroy(t_map *map);
 */
 typedef struct	s_context
 {
-	bool			is_initialized;
+	bool		is_initialized;
 
-	t_map_handle	tiny;
+	t_map_info	tiny_info;
+	t_list		tiny_list_head;
 
-	t_map_handle	small;
+	t_map_info	small_info;
+	t_list		small_list_head;
 
-	t_list		large;
+	t_map_info	large_info;
+	t_list		large_list_head;
+
 }				t_context;
 
 #endif

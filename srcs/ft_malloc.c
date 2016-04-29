@@ -35,14 +35,14 @@ bool		map__get_next_block_free(t_map *map, t_block **out_block)
 	LOG_DEBUG("%s", "in");
 
 	*out_block = NULL;
-	if (map->block_count < map->block_count_max)
+	if (map->block_count < map->info->block_count_max)
 	{
 		if (map->first_block_free == NULL)
 			FATAL("map->first_block_free %p", (void *)map->first_block_free);
 		if (!block__get_next_block_free(map->first_block_free, &block_free))
 			FATAL("block__get_next_block_free() failed %s", "");
 		if (block_free == NULL)
-			FATAL("No block free block_count %zu max %zu", map->block_count, map->block_count_max);
+			FATAL("No block free block_count %zu max %zu", map->block_count, map->info->block_count_max);
 		*out_block = block_free;
 	}
 
@@ -77,25 +77,25 @@ bool		set_next_block_free(t_list *map_list)
 /*
 ** block retrieve() / return ()
 */
-bool		block_retrieve(t_map_handle *map_handle, t_block **out_block)
+bool		block_retrieve(const t_map_info *map_info, t_list *map_list_head, t_block **out_block)
 {
 	t_list	*pos;
 	t_map	*map;
 	t_block	*block;
 
 	*out_block = NULL;
-	LIST_FOREACH(&map_handle->list_head, pos)
+	LIST_FOREACH(map_list_head, pos)
 	{
 		map = CONTAINER_OF(pos, t_map, list);
-		if (map->block_count < map->block_count_max)
+		if (map->block_count < map->info->block_count_max)
 			break ;
 	}
-	if (&map_handle->list_head == pos)
+	if (map_list_head == pos)
 	{
-		map = map__create(map_handle->map_size, map_handle->block_type, map_handle->block_size);
+		map = map__create(map_info);
 		if (map == NULL)
-			FATAL("map__create() failed map_size %zu block_type %d block_size %zu", map->size, map->block_type, map->block_size);
-		list_add_tail(&map->list, &map_handle->list_head);
+			FATAL("map__create() failed %s", "");
+		list_add_tail(&map->list, map_list_head);
 	}
 
 	LIST_FOREACH(&map->block_list, pos)
@@ -132,10 +132,6 @@ bool		block_return(t_block *block)
 		block->size = 0;
 		map = block->map_addr;
 		map->block_count--;
-		if (map->first_block_free == NULL || (void *)block < (void *)map->first_block_free)
-		{
-			map->first_block_free = block;
-		}
 		if (map->block_count == 0)
 		{
 			if (!map__destroy(map))
@@ -150,7 +146,7 @@ bool		block_return(t_block *block)
 	}
 	else
 	{
-	    LOG_ERROR("block->type %d", block->type);
+		LOG_ERROR("block->type %d", block->type);
 		return (FALSE);
 	}
 
@@ -168,58 +164,53 @@ bool	internal_map__init(t_map *map, const size_t block_size)
 	if (block_size == 0)
 		FATAL("block_size %zu", block_size);
 	INIT_LIST_HEAD(&map->block_list);
-	map->block_count_max = 0;
 	block_offset = sizeof(t_map);
-	while (block_offset < map->size)
+	while (block_offset < map->info->size)
 	{
 		block = (void *)map + block_offset;
-		block->type = map->block_type;
+		block->type = map->info->block_type;
 		block->size = 0;
 		block->state = BLOCK_STATE__FREE;
 		block->map_addr = map;
 		list_add_tail(&block->list, &map->block_list);
 		block_offset += block_size;
-		map->block_count_max++;
 	}
 	map->first_block_free = (void *)map + sizeof(t_map);
 	return (TRUE);
 }
 
-t_map	*map__create(const size_t map_size,
-					 const t_block_type block_type,
-					 const size_t block_size)
+t_map	*map__create(const t_map_info *map_info)
 {
 	t_map	*map;
 
+	LOG_DEBUG("map_size %zu block_type %d block_size %zu block_count %zu", map_info->size, map_info->block_type, map_info->block_size, map_info->block_count_max);
+
 	map = mmap(0,
-			   map_size,
+			   map_info->size,
 			   PROT_READ | PROT_WRITE,
 			   MAP_ANON | MAP_PRIVATE,
 			   -1, 0);
 	if (map == NULL)
 	{
-		LOG_ERROR("mmap() failed map_size %zu", map_size);
+		LOG_ERROR("mmap() failed map_size %zu", map_info->size);
 		return (NULL);
 	}
-	map->size = map_size;
-	map->block_type = block_type;
+	map->info = map_info;
 	map->block_count = 0;
 	INIT_LIST_HEAD(&map->list);
-	if (!internal_map__init(map, block_size))
+	if (!internal_map__init(map, map_info->block_size + sizeof(t_block)))
 		return (NULL);
-
-	LOG_DEBUG("map %p map_size %zu block_type %d block_size %zu", (void *)map, map_size, block_type, block_size);
 	return (map);
 }
 
 bool	map__destroy(t_map *map)
 {
-	LOG_DEBUG("map %p map_size %zu block_type %d block_size %zu", (void *)map, map->size, map->block_type, map->block_size);
+	LOG_DEBUG("map %p map_type %d", (void *)map, map->info->block_type);
 
 	list_del(&map->list);
-	if (munmap(map, map->size) != 0)
+	if (munmap(map, map->info->size) != 0)
 	{
-		LOG_ERROR("munmap() failed addr %p size %zu", (void *)map, map->size);
+		LOG_ERROR("munmap() failed addr %p size %zu", (void *)map, map->info->size);
 		return (FALSE);
 	}
 	return (TRUE);
@@ -240,45 +231,42 @@ size_t	context__compute_block_size(const size_t map_size)
 	block_size |= (block_size >> 8);
 	block_size |= (block_size >> 16);
 	block_size -= (block_size >> 1);
+	block_size -= sizeof(t_block);
 	return (block_size);
 }
 
-bool	context__init(t_context *context)
-{
-	int		pagesize;
+#define TINY_MAP_SIZE		(getpagesize() * 2)
+#define SMALL_MAP_SIZE		(getpagesize() * 10)
 
-	pagesize = getpagesize();
-	if (pagesize <= 0)
-		FATAL("getpagesize() returned %d", pagesize);
-
-	context->tiny.block_type = BLOCK_TYPE__TINY;
-	context->tiny.map_size = (pagesize * 2);
-	context->tiny.block_size = context__compute_block_size(context->tiny.map_size);
-	INIT_LIST_HEAD(&context->tiny.list_head);
-
-	context->small.block_type = BLOCK_TYPE__SMALL;
-	context->small.map_size = (pagesize * 15);
-	context->small.block_size = context__compute_block_size(context->small.map_size);
-	INIT_LIST_HEAD(&context->small.list_head);
-
-	INIT_LIST_HEAD(&context->large);
-	return (TRUE);
-}
-
-#define BLOCK_SIZE__UNDEFINED	(size_t)-1
 bool	get_context(t_context **out_context)
 {
 	static t_context	context = {
-		.is_initialized = FALSE
+		.is_initialized = FALSE,
 	};
 
 	*out_context = NULL;
 	if (context.is_initialized == FALSE)
 	{
-		if (!context__init(&context))
-			return (FALSE);
-		LOG_DEBUG("tiny_block_size %zu", context.tiny.block_size);
-		LOG_DEBUG("small_block_size %zu", context.small.block_size);
+		context.tiny_info.size = TINY_MAP_SIZE;
+		context.tiny_info.block_type = BLOCK_TYPE__TINY;
+		context.tiny_info.block_size = context__compute_block_size(TINY_MAP_SIZE);
+		context.tiny_info.block_count_max = TINY_MAP_SIZE / context.tiny_info.block_size;
+		context.small_info.size = SMALL_MAP_SIZE;
+		context.small_info.block_type = BLOCK_TYPE__SMALL;
+		context.small_info.block_size = context__compute_block_size(SMALL_MAP_SIZE);
+		context.small_info.block_count_max = SMALL_MAP_SIZE / context.small_info.block_size;
+		context.large_info.size = 0;
+		context.large_info.block_type = BLOCK_TYPE__LARGE;
+		context.large_info.block_size = 0;
+		context.large_info.block_count_max = 0;
+
+		INIT_LIST_HEAD(&context.tiny_list_head);
+		INIT_LIST_HEAD(&context.small_list_head);
+		INIT_LIST_HEAD(&context.large_list_head);
+
+		LOG_DEBUG("tiny_block_size %zu", context.tiny_info.block_size);
+		LOG_DEBUG("small_block_size %zu", context.small_info.block_size);
+
 		context.is_initialized = TRUE;
 	}
 	*out_context = &context;
@@ -287,26 +275,38 @@ bool	get_context(t_context **out_context)
 
 void	*ft_malloc(size_t size)
 {
-	t_context			*context;
-	t_map_handle		*map_handle;
-    t_block				*block;
-	void				*area;
+	t_context		*context;
+	t_list			*map_list_head;
+	t_map_info		*map_info;
+	t_block			*block;
+	void			*area;
+
+	LOG_DEBUG("%s", "");
 
 	if (!size)
 		return (NULL);
 	if (!get_context(&context))
 		return (NULL);
 
-	if (size < context->small.block_size)
+	if (size < context->small_info.block_size)
 	{
-		map_handle = (size < context->tiny.block_size) ? &context->tiny : &context->small;
-	    if (!block_retrieve(map_handle, &block))
+		if (size < context->tiny_info.block_size)
+		{
+			map_list_head = &context->tiny_list_head;
+			map_info = &context->tiny_info;
+		}
+		else
+		{
+			map_list_head = &context->small_list_head;
+			map_info = &context->small_info;
+		}
+		if (!block_retrieve(map_info, map_list_head, &block))
 			FATAL("block_retrieve() failed %s", "");
 	}
 	else
 	{
 		block = mmap(0,
-					 size,
+					 sizeof(t_block) + size,
 					 PROT_READ | PROT_WRITE,
 					 MAP_ANON | MAP_PRIVATE,
 					 -1, 0);
@@ -315,9 +315,10 @@ void	*ft_malloc(size_t size)
 			LOG_ERROR("mmap() failed block_size %zu", size);
 			return (NULL);
 		}
-		list_add_tail(&block->list, &context->large);
+		list_add_tail(&block->list, &context->large_list_head);
 		block->type = BLOCK_TYPE__LARGE;
 	}
+
 
 	block->state = BLOCK_STATE__USED;
 	block->size = size;
@@ -344,7 +345,7 @@ void	ft_free(void *ptr)
 
 void	*ft_realloc(void *ptr, size_t size)
 {
-    t_block	*ptr_block;
+	t_block	*ptr_block;
 	t_block	*new_block;
 	void	*new_area;
 
@@ -355,6 +356,8 @@ void	*ft_realloc(void *ptr, size_t size)
 		LOG_ERROR("ptr %p", (void *)ptr);
 		return (NULL);
 	}
+
+	LOG_DEBUG("Hello %s", "");
 
 	new_area = ft_malloc(size);
 	if (new_area == NULL)
@@ -381,6 +384,6 @@ void	*ft_realloc(void *ptr, size_t size)
 
 	ft_free(ptr);
 
-	LOG_DEBUG("area %p", (void *)new_area);
+	LOG_DEBUG("out area %p", (void *)new_area);
 	return (new_area);
 }

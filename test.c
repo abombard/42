@@ -75,9 +75,11 @@ int main(int argc, char **argv)
 				fprintf(stderr, "ft_malloc() failed size %zu\n", size);
 				return (1);
 			}
-			memcpy(str + size, STR, STR_SIZE - 15);
+			fprintf(stderr, "memcpy() %s\n", "");
+			memcpy(str + size, STR, STR_SIZE);
+			fprintf(stderr, "'0' %s\n", "");
+			str[nextsize] = 0;
 			size = nextsize;
-			str[size] = 0;
 
 			fprintf(stderr, "str %p %s\n", (void *)str, str);
 		}
