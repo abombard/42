@@ -63,8 +63,6 @@ typedef struct	s_map
 	size_t				block_count;
 	t_list				block_list;
 
-	t_block				*first_block_free;
-
 	t_list				list;
 }				t_map;
 
@@ -78,13 +76,13 @@ typedef struct	s_context
 {
 	bool		is_initialized;
 
-	t_map_info	tiny_info;
+    t_map_info	tiny_info;
 	t_list		tiny_list_head;
 
 	t_map_info	small_info;
 	t_list		small_list_head;
 
-	t_map_info	large_info;
+    t_map_info	large_info;
 	t_list		large_list_head;
 
 }				t_context;

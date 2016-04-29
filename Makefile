@@ -5,7 +5,7 @@ endif
 CC=clang
 FLAGS=-Wall -Wextra -Werror
 
-NAME=libft_malloc_$HOSTTYPE.so
+NAME=libft_malloc_$(HOSTTYPE).so
 TEST=test
 
 LIBS_DIR=./libs
@@ -38,11 +38,13 @@ $(BUILD_DIR)/%.o:$(SRC_DIR)/%.c
 	@$(CC) $(FLAGS) -fPIC -c $< -o $@ $(INCLUDES)
 
 $(NAME):exec $(OBJ)
-	@$(CC) $(FLAGS) $(OBJ) -shared -o $@
+	@$(CC) $(FLAGS) $(OBJ) $(LIBS) -shared -o $@
 	@echo "$@ was created"
+	@ln -s libft_malloc_$(HOSTTYPE).so libft_malloc.so
 
 clean:
 	@rm -rf $(BUILD_DIR)
+	@rm libft_malloc.so
 
 fclean: clean
 	@rm -f $(NAME) $(TEST)
