@@ -1,4 +1,4 @@
-#include "ft_malloc.h"
+#include "malloc.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +8,7 @@ int main(int argc, char **argv)
 	if (argc == 2)
 	{
 		/* argv[1] malloc() and free() */
-		size_t	test_array[] = { 42, 500, 1000 };
+		size_t	test_array[] = { sizeof(unsigned int), 200, 1000 };
 		size_t	test_array_size = sizeof(test_array) / sizeof(test_array[0]);
 
 		size_t	count;
@@ -25,10 +25,10 @@ int main(int argc, char **argv)
 			{
 				//fprintf(stderr, "alloc index %zu\n", j);
 
-				tmp[j] = (char *)ft_malloc(test_array[i]);
+				tmp[j] = (char *)malloc(test_array[i]);
 				if (!tmp[j])
 				{
-					fprintf(stderr, "ft_malloc() failed\n");
+					fprintf(stderr, "malloc() failed\n");
 					printf("FAILED\n");
 					return (1);
 				}
@@ -37,7 +37,7 @@ int main(int argc, char **argv)
 			for (j = 0; j < count; j ++)
 			{
 				//fprintf(stderr, "free index %zu\n", j);
-				ft_free(tmp[j]);
+				free(tmp[j]);
 			}
 
 			printf("SUCCESS\n");
@@ -56,10 +56,10 @@ int main(int argc, char **argv)
 		size_t	nextsize;
 		char	*str;
 
-		str = ft_malloc(STR_SIZE + 1);
+		str = malloc(STR_SIZE + 1);
 		if (!str)
 		{
-			fprintf(stderr, "ft_malloc() failed size %zu\n", size);
+			fprintf(stderr, "malloc() failed size %zu\n", size);
 			return (1);
 		}
 		memcpy(str, STR, STR_SIZE);
@@ -69,10 +69,10 @@ int main(int argc, char **argv)
 		while (size < size_max)
 		{
 			nextsize = size + STR_SIZE;
-			str = ft_realloc(str, nextsize + 1);
+			str = realloc(str, nextsize + 1);
 			if (!str)
 			{
-				fprintf(stderr, "ft_malloc() failed size %zu\n", size);
+				fprintf(stderr, "malloc() failed size %zu\n", size);
 				return (1);
 			}
 			fprintf(stderr, "memcpy() %s\n", "");
@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 			fprintf(stderr, "str %p %s\n", (void *)str, str);
 		}
 
-		ft_free(str);
+		free(str);
 
 		printf("SUCCESS\n");
 	}

@@ -38,13 +38,13 @@ $(BUILD_DIR)/%.o:$(SRC_DIR)/%.c
 	@$(CC) $(FLAGS) -fPIC -c $< -o $@ $(INCLUDES)
 
 $(NAME):exec $(OBJ)
-	@$(CC) $(FLAGS) $(OBJ) $(LIBS) -shared -o $@
+	@$(CC) $(FLAGS) $(OBJ) -shared -o $@
 	@echo "$@ was created"
-	@ln -s libft_malloc_$(HOSTTYPE).so libft_malloc.so
+	@ln -f -s libft_malloc_$(HOSTTYPE).so libft_malloc.so
 
 clean:
 	@rm -rf $(BUILD_DIR)
-	@rm libft_malloc.so
+	@rm -f libft_malloc.so
 
 fclean: clean
 	@rm -f $(NAME) $(TEST)
@@ -54,5 +54,5 @@ fclean: clean
 
 re: fclean all
 
-test: all
+test: $(NAME)
 	$(CC) test.c $(OBJ) $(LIBS) -o $(TEST)
