@@ -34,6 +34,8 @@ int main(int argc, char **argv)
 				}
 			}
 
+			show_memory();
+
 			for (j = 0; j < count; j ++)
 			{
 				//fprintf(stderr, "free index %zu\n", j);

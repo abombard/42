@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   parse_flags.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: abombard <marvin@42.fr>                    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/03/31 13:47:13 by abombard          #+#    #+#             */
-/*   Updated: 2016/03/31 13:54:45 by abombard         ###   ########.fr       */
-/*                                                                            */
+/*																			  */
+/*														  :::	   ::::::::	  */
+/*	 parse_flags.c										:+:		 :+:	:+:	  */
+/*													  +:+ +:+		  +:+	  */
+/*	 By: abombard <marvin@42.fr>					+#+	 +:+	   +#+		  */
+/*												  +#+#+#+#+#+	+#+			  */
+/*	 Created: 2016/03/31 13:47:13 by abombard		   #+#	  #+#			  */
+/*	 Updated: 2016/03/31 13:54:45 by abombard		  ###	########.fr		  */
+/*																			  */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
@@ -62,7 +62,11 @@ static void		get_modifier(char *fmt, uint32_t *len, t_flags *flag)
 	else if (fmt[*len] == 'j')
 		flag->j = 1;
 	else if (fmt[*len] == 'z')
+	{
 		flag->z = 1;
+		if (fmt[*len + 1] == 'u')
+			*len += 1;
+	}
 }
 
 static uint8_t	get_flag(char *fmt, uint32_t *len, t_flags *flag)

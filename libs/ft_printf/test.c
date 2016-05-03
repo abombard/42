@@ -84,5 +84,13 @@ int main()
 		fprintf(stderr, "Hello le nombre est %+.5d\n", 42);
 		ft_fprintf(2, "Hello le nombre est %+.5d\n", 42);
 
+		void	*ptr;
+		int		i = 0;
+
+		ptr = &i;
+
+		printf("%p: %zu octets\n", ptr, (size_t)42);
+		ft_printf("%p: %zu octets\n", ptr, (size_t)42);
+
 		return (0);
 }
