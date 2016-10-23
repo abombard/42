@@ -1,20 +1,9 @@
-/* ************************************************************************** */
-/*																			  */
-/*														  :::	   ::::::::	  */
-/*	 parse_flags.c										:+:		 :+:	:+:	  */
-/*													  +:+ +:+		  +:+	  */
-/*	 By: abombard <marvin@42.fr>					+#+	 +:+	   +#+		  */
-/*												  +#+#+#+#+#+	+#+			  */
-/*	 Created: 2016/03/31 13:47:13 by abombard		   #+#	  #+#			  */
-/*	 Updated: 2016/03/31 13:54:45 by abombard		  ###	########.fr		  */
-/*																			  */
-/* ************************************************************************** */
 
 #include "ft_printf.h"
 
 static uint32_t	get_precision(char *fmt, uint32_t *i)
 {
-	uint32_t		ret;
+	uint32_t	ret;
 
 	*i += 1;
 	ret = ft_atoi(&fmt[*i]);
@@ -27,7 +16,7 @@ static uint32_t	get_precision(char *fmt, uint32_t *i)
 
 static uint32_t	get_field(char *fmt, uint32_t *i)
 {
-	uint32_t		ret;
+	uint32_t	ret;
 
 	ret = ft_atoi(&fmt[*i]);
 	while (ft_isdigit(fmt[*i + 1]))
@@ -37,7 +26,7 @@ static uint32_t	get_field(char *fmt, uint32_t *i)
 	return (ret);
 }
 
-static void		get_modifier(char *fmt, uint32_t *len, t_flags *flag)
+static void	get_modifier(char *fmt, uint32_t *len, t_flags *flag)
 {
 	if (fmt[*len] == 'h')
 	{
@@ -90,7 +79,7 @@ static uint8_t	get_flag(char *fmt, uint32_t *len, t_flags *flag)
 	return (1);
 }
 
-uint8_t			flag_get_main(char *fmt, uint32_t *len, t_flags *flag)
+uint8_t		flag_get_main(char *fmt, uint32_t *len, t_flags *flag)
 {
 	if (get_flag(fmt, len, flag))
 		return (1);

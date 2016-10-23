@@ -3,10 +3,25 @@
 #include <wchar.h>
 #include <locale.h>
 
+#include <inttypes.h>
+
 int main()
 {
 		/* printf */
 		printf("%s\n", setlocale(LC_ALL, ""));
+
+		void	*ptr;
+		int		i = 0;
+
+		ptr = &i;
+
+		printf("%p: %zu octets\n", ptr, (size_t)42);
+		ft_printf("%p: %zu octets\n", ptr, (size_t)42);
+
+		printf("%" PRIXPTR "\n", (uintptr_t)ptr);
+		ft_printf("%" PRIXPTR "\n", (uintptr_t)ptr);
+
+		return 0;
 
 		printf("Slut les zouzous\n");
 		ft_printf("Slut les zouzous\n");
@@ -83,14 +98,6 @@ int main()
 		/* fprintf */
 		fprintf(stderr, "Hello le nombre est %+.5d\n", 42);
 		ft_fprintf(2, "Hello le nombre est %+.5d\n", 42);
-
-		void	*ptr;
-		int		i = 0;
-
-		ptr = &i;
-
-		printf("%p: %zu octets\n", ptr, (size_t)42);
-		ft_printf("%p: %zu octets\n", ptr, (size_t)42);
 
 		return (0);
 }

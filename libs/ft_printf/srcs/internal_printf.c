@@ -79,21 +79,21 @@ static uint32_t	get_next_part(t_buffer *dst, char *fmt, va_list ap)
 	return (len);
 }
 
-uint8_t			internal_printf(int fd, char *fmt, va_list ap, uint32_t *ret)
+extern uint8_t	internal_printf(int fd, char *fmt, va_list ap, uint32_t *ret)
 {
 	char			str[PRINTF_BUFFER_SIZE_MAX];
 	uint32_t		str_index;
 	t_buffer		buffer;
 
 	str_index = 0;
-	while (*fmt != 0)
+	while (*fmt)
 	{
 		ft_memset(buffer.data, 0, INTERNAL_DATA_SIZE_MAX);
 		buffer.size = 0;
 		fmt += get_next_part(&buffer, fmt, ap);
 		ft_memcpy(str + str_index, buffer.data, buffer.size);
 		str_index += buffer.size;
-		if (str_index + INTERNAL_DATA_SIZE_MAX >= PRINTF_BUFFER_SIZE_MAX)
+		if (str_index + INTERNAL_DATA_SIZE_MAX >= sizeof(str))
 		{
 			write(fd, str, str_index);
 			*ret += str_index;

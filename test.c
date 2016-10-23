@@ -3,9 +3,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void	usage(void)
+{
+	fprintf(stderr, "Usage: ./test <mode> [options]\n");
+	fprintf(stderr, "	-t: <simple|medium|hard|realloc>\n");
+	fprintf(stderr, "	-o: <option>\n");
+}
+
 int main(int argc, char **argv)
 {
-	if (argc == 2)
+	int	opt;
+	enum {
+		UNDEFINED,
+		SIMPLE,
+		MEDIUM,
+		HARD,
+		REALLOC
+	} mode = UNDEFINED;
+	int	option = 0;
+
+	while ((opt = getopt(argc, argv, "t:o:")) != -1)
+	{
+		switch (opt)
+		{
+			case 't':
+				if (!strcmp(optarg, "simple"))
+					mode = SIMPLE;
+				else if (!strcmp(optarg, "medium"))
+					mode = MEDIUM;
+				else if (!strcmp(optarg, "hard"))
+					mode = HARD;
+				else if (!strcmp(optarg, "realloc"))
+					mode = REALLOC;
+				else
+				{
+					fprintf(stderr, "Invalid test %s\n", optarg);
+					return 1;
+				}
+				break ;
+			case 'o':
+				option = atoi(optarg);
+				break ;
+			default:
+				usage();
+				return 1;
+		}
+	}
+	if (mode == UNDEFINED)
+	{
+		usage();
+		return 1;
+	}
+
+	if (mode == SIMPLE)
 	{
 		/* argv[1] malloc() and free() */
 		size_t	test_array[] = { sizeof(unsigned int), 200, 1000 };
@@ -14,7 +64,7 @@ int main(int argc, char **argv)
 		size_t	count;
 		size_t	i, j;
 
-		count = atoi(argv[1]);
+		count = option;
 
 		char	*tmp[count];
 
@@ -42,13 +92,15 @@ int main(int argc, char **argv)
 				free(tmp[j]);
 			}
 
+			show_memory();
+
 			printf("SUCCESS\n");
 		}
 	}
-	else
+	else if (mode == REALLOC)
 	{
 		// realloc loop TINY to LARGE
-#define STR						"hello world!"
+#define STR				"hello world!"
 #define STR_SIZE		 sizeof("hello world!") - 1
 
 		size_t	size_max = 4096;

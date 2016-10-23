@@ -14,14 +14,14 @@
 
 static uint8_t	field_bfore(t_buffer *dst, uint32_t len, uint8_t c)
 {
-	uint32_t		x;
+	uint32_t	x;
 
 	x = 1;
 	dst->size += len;
 	if (dst->size > INTERNAL_DATA_SIZE_MAX)
 	{
-		ft_putendl_fd("error: field_before: dst->size > INTERNAL_DATA_SIZE_MAX",
-						2);
+		ft_putendl_fd("field_before: dst->size > INTERNAL_DATA_SIZE_MAX",
+				2);
 		return (0);
 	}
 	while (x < dst->size)
@@ -33,8 +33,8 @@ static uint8_t	field_bfore(t_buffer *dst, uint32_t len, uint8_t c)
 
 static uint8_t	field_after(t_buffer *dst, uint32_t len, uint8_t c)
 {
-	t_buffer		tmp;
-	uint32_t		x;
+	t_buffer	tmp;
+	uint32_t	x;
 
 	x = 0;
 	while (len)
@@ -47,18 +47,18 @@ static uint8_t	field_after(t_buffer *dst, uint32_t len, uint8_t c)
 	dst->size += x;
 	if (dst->size > INTERNAL_DATA_SIZE_MAX)
 	{
-		ft_putendl_fd("error: field_before: dst->size > INTERNAL_DATA_SIZE_MAX",
-						2);
+		ft_putendl_fd("field_before: dst->size > INTERNAL_DATA_SIZE_MAX",
+				2);
 		return (0);
 	}
 	ft_memcpy(dst->data, tmp.data, dst->size);
 	return (1);
 }
 
-uint8_t			flag_apply_field(t_buffer *dst, t_flags *flag)
+uint8_t		flag_apply_field(t_buffer *dst, t_flags *flag)
 {
-	uint32_t		len;
-	uint8_t			c;
+	uint32_t	len;
+	uint8_t		c;
 
 	if (flag->zero && (!flag->moins || !flag->field))
 		c = '0';
