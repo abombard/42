@@ -1,8 +1,17 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   realloc.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abombard <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2016/10/31 12:41:48 by abombard          #+#    #+#             */
+/*   Updated: 2016/10/31 12:41:58 by abombard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "internal_malloc.h"
 
-/*
-** realloc()
-*/
 void	*realloc(void *ptr, size_t size)
 {
 	t_block	*ptr_block;
@@ -28,4 +37,3 @@ void	*realloc(void *ptr, size_t size)
 	free(ptr);
 	return (new_area);
 }
-

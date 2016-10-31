@@ -26,18 +26,9 @@ typedef char			t_byte;
 typedef struct {
 	size_t				size;
 	char				*bytes;
-}	t_buffer;
+} t_buffer;
 
 # define STRING_TO_BUFFER(str)	(t_buffer){ (size_t)(sizeof(str) - 1), (char *)str }
 # define BUFFER_INIT(size, str)	(t_buffer){ (size_t)size, (char *)str }
-
-typedef int				t_failure_code;
-# define PRI_FAILURE_CODE				"d"
-
-# define FAILURE_CODE_SUCCESS			1
-# define FAILURE_CODE_UNDEFINED			2
-# define FAILURE_CODE_NONE				3
-# define FAILURE_CODE_FATAL				4
-# define FAILURE_CODE_NULL_PARAMETER	5
 
 #endif

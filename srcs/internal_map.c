@@ -1,20 +1,33 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   internal_map.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: abombard <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2016/10/31 12:30:37 by abombard          #+#    #+#             */
+/*   Updated: 2016/10/31 12:32:34 by abombard         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "internal_malloc.h"
 #include <sys/mman.h>
 #include <sys/resource.h>
 
 /*
-** mmap()
+** mmap
 */
+
 static size_t	real_map_size(size_t size)
 {
 	return (size + size % getpagesize());
 }
 
-extern void	*internal_mmap(size_t size)
+extern void		*internal_mmap(size_t size)
 {
-	t_context	*context;
+	t_context		*context;
 	struct rlimit	rlim;
-	void		*map;
+	void			*map;
 
 	if (!get_context(&context))
 		return (NULL);
@@ -29,11 +42,7 @@ extern void	*internal_mmap(size_t size)
 		LOG_ERROR("Reached max allocated memory %zu", (size_t)rlim.rlim_max);
 		return (NULL);
 	}
-	map = mmap(0,
-			size,
-			PROT_READ | PROT_WRITE,
-			MAP_ANON | MAP_PRIVATE,
-			-1, 0);
+	map = mmap(0, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 	if (map == MAP_FAILED)
 	{
 		LOG_ERROR("mmap() failed size %zu", size);
@@ -43,9 +52,10 @@ extern void	*internal_mmap(size_t size)
 }
 
 /*
-** munmap()
+** munmap
 */
-extern bool	internal_munmap(void *addr, size_t size)
+
+extern bool		internal_munmap(void *addr, size_t size)
 {
 	t_context	*context;
 
@@ -59,4 +69,3 @@ extern bool	internal_munmap(void *addr, size_t size)
 	}
 	return (TRUE);
 }
-

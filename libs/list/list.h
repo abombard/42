@@ -6,7 +6,7 @@
 /*   By: abombard <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/04/19 14:49:30 by abombard          #+#    #+#             */
-/*   Updated: 2016/04/19 14:51:35 by abombard         ###   ########.fr       */
+/*   Updated: 2016/10/31 15:16:09 by abombard         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,29 @@
 # define LIST_H
 
 /*
-** Get offset of a member
+** Define the offset of the member m of type t.
+** @param t: type		the type of the structure
+** @param m: member		the member to get the offset
 */
+
 # undef OFFSETOF
 # define OFFSETOF(type, member) ((size_t) &((type *)0)->member)
 
+# define OFST_OF(t, m) OFFSETOF(t, m)
+
 /*
-** Casts a member of a structure out to the containing structure
-** @param p: ptr		the pointer to the member.
-** @param t: type		the type of the container struct this is embedded in.
-** @param m: member		the name of the member within the struct.
-** TEMP: find a way to port the more recent macro from linux headers
+** Cast a member of a structure of type t pointed by ptr and named m out to the
+** containing structure.
+** @param p: ptr		the pointer to the member
+** @param t: type		the type of the container structure
+** @param m: member		the name of the member
 */
+
+# undef TYPE_M
+# define TYPE_M(t,m) const typeof(((t*)0)->m)
+
 # undef CONTAINER_OF
-# define CONTAINER_OF(p,t,m) ((t*)(((char*)(p))-((char*)(&((t*)0)->m))))
+# define CONTAINER_OF(p,t,m)({TYPE_M(t,m)*mp=(p);(t*)((char*)mp-OFST_OF(t,m));})
 
 /*
 ** Double linked list implementation

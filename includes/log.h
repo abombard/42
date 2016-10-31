@@ -16,8 +16,6 @@
 # include <stdio.h>
 # include "types.h"
 
-//# define LF ":%s:%s():%d#"
-//# define LA __FILE__, __func__, __LINE__
 # define LF ":%s() "
 # define LA __func__
 
