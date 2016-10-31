@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 		size_t	count;
 		size_t	i, j;
 
-		count = option;
+		count = option <= 0 ? 1 : option;
 
 		char	*tmp[count];
 

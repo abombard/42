@@ -20,7 +20,16 @@ INCLUDES=-I ./includes
 
 BUILD_DIR= __build
 
-SRC=ft_malloc.c\
+SRC=malloc.c\
+		free.c\
+		realloc.c\
+		calloc.c\
+		show_mem.c\
+		internal_map.c\
+		map.c\
+		block.c\
+		context.c\
+
 
 OBJ=$(addprefix $(BUILD_DIR)/,$(SRC:.c=.o))
 
