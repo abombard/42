@@ -10,7 +10,7 @@ TEST=test
 
 LIBS_DIR=./libs
 DIR_LIBFT=$(LIBS_DIR)/libft
-DIR_PRINTF=$(LIBS_DIR)/ft_printf
+DIR_PRINTF=$(LIBS_DIR)/printf
 DIR_LIST=$(LIBS_DIR)/list
 
 LIBS=-L $(DIR_PRINTF) -lprintf -L $(DIR_LIBFT) -lft -L $(DIR_LIST) -llist
@@ -47,7 +47,7 @@ $(BUILD_DIR)/%.o:$(SRC_DIR)/%.c
 	@$(CC) $(FLAGS) -fPIC -c $< -o $@ $(INCLUDES)
 
 $(NAME):exec $(OBJ)
-	@$(CC) $(FLAGS) $(OBJ) -shared -o $@
+	@$(CC) $(FLAGS) $(OBJ) $(LIBS) -shared -o $@
 	@echo "$@ was created"
 	@ln -f -s libft_malloc_$(HOSTTYPE).so libft_malloc.so
 

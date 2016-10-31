@@ -26,7 +26,7 @@ extern void	*internal_mmap(size_t size)
 	}
 	if (context->total_allocated_memory > rlim.rlim_max)
 	{
-		LOG_ERROR("Reached max allocated memory %ld", rlim.rlim_max);
+		LOG_ERROR("Reached max allocated memory %zu", (size_t)rlim.rlim_max);
 		return (NULL);
 	}
 	map = mmap(0,

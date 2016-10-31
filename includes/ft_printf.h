@@ -1,1 +1,1 @@
-#include "../libs/ft_printf/ft_printf.h"
+#include "../libs/printf/ft_printf.h"
